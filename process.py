@@ -2,9 +2,11 @@ import os
 import sys
 from bs4 import BeautifulSoup
 
-# Console output
-orig_stdout = sys.stdout
-sys.stdout = open('log.txt', 'w')
+orig_stdout = False
+if '--log-to-file' in sys.argv:
+    # Console output
+    orig_stdout = sys.stdout
+    sys.stdout = open('log.txt', 'w')
 
 with open("input/input.html") as f:
     content = f.readlines()
@@ -490,5 +492,6 @@ print("\nParsed API methods (endpoints)\n====")
 for method in apiMethods:
     print(method)
 
-sys.stdout.close()
-orig_stdout.close()
+if orig_stdout:
+    sys.stdout.close()
+    orig_stdout.close()
