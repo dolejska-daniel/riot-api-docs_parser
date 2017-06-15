@@ -189,6 +189,12 @@ for data_resource in soup.find_all('li'):
                 except KeyError:
                     # No class or id
                     continue
+                try:
+                    if data_objectClass['id']:
+                        continue
+                except KeyError:
+                    # Doesn't have ID
+                    pass
 
                 for a in data_endpoint.find_all('a'):
                     try:
@@ -237,31 +243,29 @@ for resourceName in resources:
             endpointsPrinted.append(endpoint["id"])
 
         data_objectClass = endpoint['html']
-        # head = data_objectClass.find('h5').findParent("div").text
         text = data_objectClass.text
 
+        i = text.find(' - ')
+        if i is not -1:
+            className = text[:text.index(' - ')]
+        else:
+            className = text
+
+        if className.find("Return value: ") is not -1:
+            continue
+
+        className = className.split(" ")[0]
+        className = className.strip()
+        className = className.replace("DTO", "Dto")
+
         try:
-            className = text[:text.index(' - ')].strip()
             classDesc = text[text.index(' - ') + 3:text.find("Name\nData Type\nDescription")].strip()
         except ValueError:
-            className = text
             classDesc = ""
 
         try:
-            if className.index(' '):
+            if className.find('Return value:') is not -1:
                 continue
-        except ValueError:
-            pass
-
-        try:
-            if className.index(':'):
-                continue
-        except ValueError:
-            pass
-
-        try:
-            i = className.index('DTO')
-            className = className[:i] + "Dto" + className[i + 3:]
         except ValueError:
             pass
 
