@@ -132,7 +132,7 @@ for data_resource in soup.find_all('li'):
         "ignored": False,
         "endpoints": []
     }
-    print("Parsed resource {0} ({1}) [{2}]".format(heading, version, link), end='')
+    print("Parsed resource {0:36} [{1}]".format("{0} ({1})".format(heading, version), link), end='')
 
     for data_endpoint in data_resource.find_all('ul'):
         try:
@@ -190,14 +190,19 @@ for data_resource in soup.find_all('li'):
                     # No class or id
                     continue
 
-                endpointLink = "unknown"
                 for a in data_endpoint.find_all('a'):
                     try:
-                        if a['href'].index(link + "/"):
+                        if a['href'].find(endpointId) is -1:
                             # class does not match
+                            endpointLink = "URL unknown"
                             continue
+                    except KeyError:
+                        # Invalid a tag
+                        endpointLink = "URL unknown"
+                        continue
                     except ValueError:
                         # No class or id
+                        endpointLink = "URL unknown"
                         continue
 
                     endpointLink = a['href']
@@ -211,7 +216,7 @@ for data_resource in soup.find_all('li'):
                 }
                 r['endpoints'].append(endpointData)
 
-            print("\tParsed endpoint {0} [{1}]".format(endpointId, endpointLink))
+            print("\tParsed endpoint {0:32} [{1}]".format(endpointId, endpointLink))
         print()
     try:
         resources[r['name']] = r
