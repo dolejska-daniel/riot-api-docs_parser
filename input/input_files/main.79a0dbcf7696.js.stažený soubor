@@ -1,0 +1,96 @@
+function apiStatusChart(chart_address){
+  document.getElementById('statusChart').src="https://rpm.newrelic.com/public/charts/"+chart_address;
+}
+//When creating a new policy- this function helps manages the API options that will be saved.
+$(document).ready(function() {
+  $('#add').click(function() {
+    var option = $('#id_all_policies option:selected').sort().clone();
+    $('#policies').append(option);
+  });
+  $('#remove').click(function() {
+    return !$('#policies option:selected').remove();
+  });
+  $('#submit_policy').click(function() {
+    $('#id_transfer_policy option').prop('selected', true);
+    $('#id_transfer_policy option:selected').remove();
+
+    $('#policies option').prop('selected', true);
+    var option = $('#policies option:selected').sort().clone();
+    $('#policies option').prop('selected', false);
+    $('#id_transfer_policy').append(option);
+    $('#id_transfer_policy option').prop('selected', true);
+
+  });
+});
+//The Next Batch of apps have to do with maintaining that the page is active when it is clicked and on the same page.
+//App Details
+$(document).ready(function () {
+    var loc = window.location.href;
+    $(".list-messages a").each(function() {
+        if (loc.indexOf($(this).attr("href")) != -1) {
+            $(this).parents().eq(2).addClass("list-group-messages-current");
+        }
+    });
+});
+//Messages
+$(document).ready(function () {
+    var loc = window.location.href;
+    $(".app-nav-bar a").each(function() {
+        if (loc.indexOf($(this).attr("href")) != -1) {
+            $(this).parent().addClass("active");
+        }
+    });
+});
+//Admin Side Bar
+$(document).ready(function () {
+    var loc = window.location.href;
+    $(".site-menu a").each(function() {
+        if (loc.indexOf($(this).attr("href")) != -1) {
+            $(this).parent().addClass("active-on");
+            if ($(this).hasClass('sub-item')){
+             $(this).parents().eq(2).addClass("menu-active");
+           }
+        }
+    });
+});
+
+
+$('site-menu .site-menu-item.menu-active > .site-menu-sub').click(function() {
+  $(this).parent().find('ul').toggle();
+})
+
+//Copy to clipboard
+function clipboard(divName) {
+    var range;
+    if (document.selection) {
+        range = document.body.createTextRange();
+        range.moveToElementText(document.getElementById(divName));
+        range.select().createTextRange();
+        document.execCommand("Copy");
+        range.select().removeAllRanges();
+    } else if (window.getSelection) {
+        range = document.createRange();
+        range.selectNode(document.getElementById(divName));
+        window.getSelection().addRange(range);
+        document.execCommand("Copy");
+        window.getSelection().removeAllRanges();
+    }
+    alert('API Key copied to clipboard!');
+    return false;
+}
+
+function clipboard(id) {
+    var elem = $('#'+id)[0];
+    elem.focus();
+    elem.setSelectionRange(0, elem.value.length);
+
+    try {
+        document.execCommand("copy");
+    } catch(e) {
+        console.log('Failed to copy to clipboard.')
+    }
+
+    elem.blur();
+    $('#'+id+'-toast').show();
+    $('#'+id+'-toast').fadeOut(500);
+}
