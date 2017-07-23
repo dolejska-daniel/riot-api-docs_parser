@@ -76,6 +76,8 @@ classesIterable = {
     "StaticChampionListDto": "data",
     "StaticItemListDto": "data",
     "StaticMapDataDto": "data",
+    "StaticLanguageStringsDto": "data",
+    "StaticProfileIconDataDto": "data",
     "StaticMasteryListDto": "data",
     "StaticMasteryTreeListDto": "masteryTreeItems",
     "StaticRuneListDto": "data",
@@ -83,12 +85,13 @@ classesIterable = {
     # other
     "ChampionListDto": "champions",
     "FeaturedGames": "gameList",
-    "Frame": "events",
-    "LeagueDto": "entries",
+    "Incident": "updates",
+    "LeagueListDto": "entries",
     "LobbyEventDtoWrapper": "eventList",
     "MasteryPageDto": "masteries",
     "MasteryPagesDto": "pages",
-    "MatchList": "matches",
+    "MatchlistDto": "matches",
+    "MatchTimelineDto": "frames",
     "PlayerStatsSummaryListDto": "playerStatSummaries",
     "RankedStatsDto": "champions",
     "RecentGamesDto": "games",
@@ -97,6 +100,21 @@ classesIterable = {
     "Service": "incidents",
     "ShardStatus": "services",
     "Timeline": "frames",
+}
+classesLinkable = {
+    "BannedChampion": ["championId", "getStaticChampion"],
+    "ChampionDto": ["id", "getStaticChampion"],
+    "ChampionMasteryDto": ["championId", "getStaticChampion"],
+    "CurrentGameParticipant": ["championId", "getStaticChampion"],
+    "Mastery": ["masteryId", "getStaticMastery"],
+    "MasteryDto": ["id", "getStaticMastery"],
+    "MatchReferenceDto": ["champion", "getStaticChampion"],
+    "Participant": ["championId", "getStaticChampion"],
+    "ParticipantDto": ["championId", "getStaticChampion"],
+    "Rune": ["runeId", "getStaticRune"],
+    "RuneDto": ["runeId", "getStaticRune"],
+    "RuneSlotDto": ["runeId", "getStaticRune"],
+    "TeamBansDto": ["championId", "getStaticChampion"],
 }
 
 apiMethods = []
@@ -417,12 +435,15 @@ for className in classes:
 
     classAnnotation += "\n *\n * Used in:"
     for resource in c['resources']:
-        classAnnotation += "\n *   " + resource['name'] + " (" + resource['version'] + ")"
+        classAnnotation += "\n *   {0} ({1})".format(resource['name'], resource['version'])
         for endpoint in c['endpoints'][resource['name']]:
             classAnnotation += "\n *     @link " + endpoint['link']
 
-    if c['className'] in classesIterable:
-        classAnnotation += "\n *\n * @iterable $" + classesIterable[c['className']]
+    if c['className'] in classesLinkable:
+        classAnnotation += "\n *\n * @linkable ${0} ({1})".format(classesLinkable[c['className']][0], classesLinkable[c['className']][1])
+        c['classExtends']['className'] = "ApiObjectLinkable"
+    elif c['className'] in classesIterable:
+        classAnnotation += "\n *\n * @iterable ${0}".format(classesIterable[c['className']])
         c['classExtends']['className'] = "ApiObjectIterable"
 
     classUses = ""
@@ -432,11 +453,11 @@ for className in classes:
     properties = ""
     for prop in c['properties']:
         if len(prop['desc']):
-            properties += "\n\t/**\n\t *   " + prop["desc"] + "\n\t *"
-            properties += "\n\t * @var " + prop['dataType'] + " $" + prop['name'] + "\n\t */"
+            properties += "\n\t/**\n\t *   {0}\n\t *".format(prop["desc"])
+            properties += "\n\t * @var {0} ${1}\n\t */".format(prop['dataType'], prop['name'])
         else:
-            properties += "\n\t/** @var " + prop['dataType'] + " $" + prop['name'] + " */"
-        properties += "\n\tpublic $" + prop['name'] + ";\n"
+            properties += "\n\t/** @var {0} ${1} */".format(prop['dataType'], prop['name'])
+        properties += "\n\tpublic ${0};\n".format(prop['name'])
 
     classDir = ""
     if len(c['classDir']):

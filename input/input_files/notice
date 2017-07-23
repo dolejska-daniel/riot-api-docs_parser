@@ -23,7 +23,7 @@ if(i&&i.type=="error"){truste.util.trace("ERROR Script was unable to load: "+f);
 return e};truste.util.msglog=function(a,b){truste.eu&&truste.eu.msg&&truste.eu.msg.log(a,truste.eu.bindMap,b)
 };(function me(){arguments.callee.cnt=arguments.callee.cnt||0;var w=window.jQuery_TRUSTe||window.jQuery,z={},o="http"+(/s/.test(location.protocol)?"s:":":");
 if(!w){truste.util.addScriptElement(o+"//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js",arguments.callee);
-return}z.domain="riotgames.com";z.baseURL="http://consent.truste.com/".replace(/^\w{3,5}:/,o);z.bannerMsgURL=z.baseURL+"bannermsg?";
+return}z.domain="riotgames.com";z.baseURL="https://consent.truste.com/".replace(/^\w{3,5}:/,o);z.bannerMsgURL=z.baseURL+"bannermsg?";
 z.country="gb";z.iconws=o+"//preferences.truste.com/webservices/js";if(arguments.callee.cnt<1){arguments.callee.script=truste.util.getScriptElement(/\/\/[^\.]+\.(intranet\.)?truste(-labs|-svc)?\.(com|net)(:\n+)?\/[^\?#;]*notice(\?|\.js)/,true)
 }truste.util.initParameterMap(arguments.callee.script,z);var b=z.c||"teconsent";var r=z.bb||"consent_blackbar";
 var i=z.fc?isNaN(parseInt(z.fc))?z.fc:"footerCookie":null;var p=(z.cm||(z.cdn&&o+"//consent-st.truste.com/get?name=notice.js&")||(z.baseURL+"notice?"))+"domain="+z.domain+"&country="+z.country+"&"+z._query.replace(/\b(js|domain|country|name)=[^&#]*&?/g,""),a='<img id="ad-ch-icn" width="19px" height="15px" src="'+o+'//choices.truste.com/get?name=admarker-icon-tr.png" style="background:transparent !important;margin:0;padding:0;border:none;position:relative;right:0px;top:0;float:right;">',v='<a id="truste-ad-choices" style="cursor:pointer;" target="_blank">'+a+"</a>",s='<a id="truste-ad-choices-text" style="cursor:pointer;" target="_blank">AdChoices</a>';

@@ -4,6 +4,10 @@
   z-index: 1401;
   width: 100%; }
 
+  .riot-admin .riotred {
+   color: #dc291e; 
+   }
+
 .riot-admin .page {
   background: #ffffff; }
 
@@ -1966,4 +1970,20 @@ input:-webkit-autofill {
   .expaned_row
   {
     background-color: #f7f7f7;
+  }
+
+  .clickable
+  {
+    cursor: pointer;
+  }
+
+  .user_table th, td{ 
+      padding-bottom: 5px;
+      padding-right:10px;
+  }
+
+  .user_table th
+  {
+    font-weight: bold;
+    text-transform: uppercase;
   }
