@@ -24,6 +24,9 @@ def cleandir(path):
                 os.remove(newpath)
     except PermissionError:
         pass
+    except FileNotFoundError:
+        os.makedirs(outputDir)
+        pass
 
 outputDir = os.getcwd() + "/output/"
 cleandir(outputDir)
@@ -102,19 +105,19 @@ classesIterable = {
     "Timeline": "frames",
 }
 classesLinkable = {
-    "BannedChampion": ["championId", "getStaticChampion"],
-    "ChampionDto": ["id", "getStaticChampion"],
-    "ChampionMasteryDto": ["championId", "getStaticChampion"],
-    "CurrentGameParticipant": ["championId", "getStaticChampion"],
-    "Mastery": ["masteryId", "getStaticMastery"],
-    "MasteryDto": ["id", "getStaticMastery"],
-    "MatchReferenceDto": ["champion", "getStaticChampion"],
-    "Participant": ["championId", "getStaticChampion"],
-    "ParticipantDto": ["championId", "getStaticChampion"],
-    "Rune": ["runeId", "getStaticRune"],
-    "RuneDto": ["runeId", "getStaticRune"],
-    "RuneSlotDto": ["runeId", "getStaticRune"],
-    "TeamBansDto": ["championId", "getStaticChampion"],
+    "BannedChampion": ["championId", "getStaticChampions"],
+    "ChampionDto": ["id", "getStaticChampions"],
+    "ChampionMasteryDto": ["championId", "getStaticChampions"],
+    "CurrentGameParticipant": ["championId", "getStaticChampions"],
+    "Mastery": ["masteryId", "getStaticMasteries"],
+    "MasteryDto": ["id", "getStaticMasteries"],
+    "MatchReferenceDto": ["champion", "getStaticChampions"],
+    "Participant": ["championId", "getStaticChampions"],
+    "ParticipantDto": ["championId", "getStaticChampions"],
+    "Rune": ["runeId", "getStaticRunes"],
+    "RuneDto": ["runeId", "getStaticRunes"],
+    "RuneSlotDto": ["runeId", "getStaticRunes"],
+    "TeamBansDto": ["championId", "getStaticChampions"],
 }
 
 apiMethods = []
@@ -394,7 +397,7 @@ for resourceName in resources:
             except ValueError:
                 pass
 
-            if dataType in ['long']:
+            if dataType in ['long', 'Long']:
                 dataType = 'int'
 
             if dataType in ['boolean']:
@@ -470,7 +473,7 @@ for className in classes:
         template = '''<?php
 
 /**
- * Copyright (C) 2016  Daniel Dolejška
+ * Copyright (C) 2016-2018  Daniel Dolejška
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
