@@ -35,9 +35,10 @@ var Docs = {
     /* added by lestes */
     jumpToResource: function (div) {
         var elem = $(div);
-        // console.log(elem);
 
-        elem.slideto({highlight: false});
+        $('html, body').animate({
+            scrollTop: (elem.offset().top - 100)
+        }, 500);
     },
 
     /* added by mroot */

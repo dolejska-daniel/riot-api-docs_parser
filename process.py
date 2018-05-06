@@ -87,7 +87,9 @@ classesIterable = {
     "StaticSummonerSpellListDto": "data",
     # other
     "ChampionListDto": "champions",
+    "CurrentGameInfo": "participants",
     "FeaturedGames": "gameList",
+    "FeaturedGameInfo": "participants",
     "Incident": "updates",
     "LeagueListDto": "entries",
     "LobbyEventDtoWrapper": "eventList",
@@ -95,6 +97,8 @@ classesIterable = {
     "MasteryPagesDto": "pages",
     "MatchlistDto": "matches",
     "MatchTimelineDto": "frames",
+    "Message": "translations",
+    "Perks": "perkIds",
     "PlayerStatsSummaryListDto": "playerStatSummaries",
     "RankedStatsDto": "champions",
     "RecentGamesDto": "games",
@@ -109,14 +113,9 @@ classesLinkable = {
     "ChampionDto": ["id", "getStaticChampions"],
     "ChampionMasteryDto": ["championId", "getStaticChampions"],
     "CurrentGameParticipant": ["championId", "getStaticChampions"],
-    "Mastery": ["masteryId", "getStaticMasteries"],
-    "MasteryDto": ["id", "getStaticMasteries"],
     "MatchReferenceDto": ["champion", "getStaticChampions"],
     "Participant": ["championId", "getStaticChampions"],
     "ParticipantDto": ["championId", "getStaticChampions"],
-    "Rune": ["runeId", "getStaticRunes"],
-    "RuneDto": ["runeId", "getStaticRunes"],
-    "RuneSlotDto": ["runeId", "getStaticRunes"],
     "TeamBansDto": ["championId", "getStaticChampions"],
 }
 
@@ -405,6 +404,7 @@ for resourceName in resources:
 
             stdDataTypes = ['integer', 'int', 'string', 'bool', 'boolean', 'double', 'float', 'array']
             if dataType not in stdDataTypes:
+                dataType.replace("DTO", "Dto")
                 dataType = c["classNamePrepend"] + dataType
 
             dataType += dataTypeAppend
