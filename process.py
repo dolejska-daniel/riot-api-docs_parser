@@ -399,15 +399,18 @@ for resourceName in resources:
             except ValueError:
                 pass
 
-            if dataType in ['long', 'Long', 'double']:
+            if dataType.lower() in ['float', 'double']:
                 dataType = 'float'
 
-            if dataType in ['boolean']:
+            if dataType.lower() in ['int', 'long']:
+                dataType = 'int'
+
+            if dataType.lower() in ['bool', 'boolean']:
                 dataType = 'bool'
 
             dataType = dataType.replace("DTO", "Dto")
 
-            stdDataTypes = ['integer', 'int', 'string', 'bool', 'float', 'array']
+            stdDataTypes = ['integer', 'string', 'bool', 'float', 'array']
             if dataType not in stdDataTypes:
                 dataType = c["classNamePrepend"] + dataType
 
