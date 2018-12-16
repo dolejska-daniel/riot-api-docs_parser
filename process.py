@@ -31,6 +31,8 @@ def cleandir(path):
 outputDir = os.getcwd() + "/output/"
 cleandir(outputDir)
 
+namespaceRoot = "RiotAPI\\LeagueAPI"
+
 resourceIgnored = [
     # Champion v1.2
     1206,
@@ -68,7 +70,7 @@ resourceMapping = {
     "1351": {
         "classNamePrepend": "Static",
         "classDir": "StaticData",
-        "classPackage": "RiotAPI\Objects\StaticData",
+        "classPackage": namespaceRoot + "\Objects\StaticData",
     }
 }
 resources = {}
@@ -109,17 +111,18 @@ classesIterable = {
     "Timeline": "frames",
 }
 classesLinkable = {
-    "BannedChampion": ["championId", "getStaticChampions"],
-    "ChampionDto": ["id", "getStaticChampions"],
-    "ChampionMasteryDto": ["championId", "getStaticChampions"],
-    "CurrentGameParticipant": ["championId", "getStaticChampions"],
-    "MatchReferenceDto": ["champion", "getStaticChampions"],
-    "Participant": ["championId", "getStaticChampions"],
-    "ParticipantDto": ["championId", "getStaticChampions"],
-    "TeamBansDto": ["championId", "getStaticChampions"],
+    "BannedChampion": ["getStaticChampion", "championId"],
+    "ChampionDto": ["getStaticChampion", "id"],
+    "ChampionMasteryDto": ["getStaticChampion", "championId"],
+    "CurrentGameParticipant": ["getStaticChampion", "championId"],
+    "MatchReferenceDto": ["getStaticChampion", "champion"],
+    "Participant": ["getStaticChampion", "championId"],
+    "ParticipantDto": ["getStaticChampion", "championId"],
+    "TeamBansDto": ["getStaticChampion", "championId"],
 }
 
 apiMethods = []
+
 
 print("Parsing resources and endpoints\n====")
 soup = BeautifulSoup(content, 'lxml')
@@ -306,7 +309,7 @@ for resourceName in resources:
                     "classPackage": mapping["classPackage"],
                     "classExtends": {
                         "className": "ApiObject",
-                        "classPackage": "RiotAPI\Objects",
+                        "classPackage": namespaceRoot + "\Objects",
                     },
                     "resources": [],
                     "endpoints": {},
@@ -322,10 +325,10 @@ for resourceName in resources:
                     "classNamePrepend": "",
                     "classDesc": classDesc,
                     "classDir": "",
-                    "classPackage": "RiotAPI\Objects",
+                    "classPackage": namespaceRoot + "\Objects",
                     "classExtends": {
                         "className": "ApiObject",
-                        "classPackage": "RiotAPI\Objects",
+                        "classPackage": namespaceRoot + "\Objects",
                     },
                     "resources": [],
                     "endpoints": {},
@@ -396,15 +399,16 @@ for resourceName in resources:
             except ValueError:
                 pass
 
-            if dataType in ['long', 'Long']:
-                dataType = 'int'
+            if dataType in ['long', 'Long', 'double']:
+                dataType = 'float'
 
             if dataType in ['boolean']:
                 dataType = 'bool'
 
-            stdDataTypes = ['integer', 'int', 'string', 'bool', 'boolean', 'double', 'float', 'array']
+            dataType = dataType.replace("DTO", "Dto")
+
+            stdDataTypes = ['integer', 'int', 'string', 'bool', 'float', 'array']
             if dataType not in stdDataTypes:
-                dataType.replace("DTO", "Dto")
                 dataType = c["classNamePrepend"] + dataType
 
             dataType += dataTypeAppend
@@ -443,7 +447,7 @@ for className in classes:
             classAnnotation += "\n *     @link " + endpoint['link']
 
     if c['className'] in classesLinkable:
-        classAnnotation += "\n *\n * @linkable ${0} ({1})".format(classesLinkable[c['className']][0], classesLinkable[c['className']][1])
+        classAnnotation += "\n *\n * @linkable {0}(${1})".format(classesLinkable[c['className']][0], classesLinkable[c['className']][1])
         c['classExtends']['className'] = "ApiObjectLinkable"
     elif c['className'] in classesIterable:
         classAnnotation += "\n *\n * @iterable ${0}".format(classesIterable[c['className']])
