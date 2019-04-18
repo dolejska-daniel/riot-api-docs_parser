@@ -140,7 +140,8 @@ for data_resource in soup.find_all('li'):
         # Invalid id
         continue
 
-    heading = data_resource.find('a').find('span').text
+    # print(data_resource)
+    heading = data_resource['api-name']
     link = data_resource.find('a')['href']
 
     try:
