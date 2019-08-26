@@ -34,36 +34,21 @@ cleandir(outputDir)
 namespaceRoot = "RiotAPI\\LeagueAPI"
 
 resourceIgnored = [
-    # Champion v1.2
-    1206,
-    # ChampionMastery
-    1091,
-    # CurrentGame v1.0
-    976,
-    # Featured Games v1.0
-    977,
-    # Game v1.3
-    1207,
-    # League v2.5
-    1215,
-    # LoL Static Data v1.2
-    1055,
-    # LoL Status v1.0
-    1085,
-    # Match v2.2
-    1224,
-    # MatchList v2.2
-    1223,
-    # Runes Masteries v1.4
-    1222,
-    # Stats v1.3
-    1209,
-    # Summoner v1.4
-    1221,
-    # Tournament Provider v1
-    1057,
-    # Tournament Stub v1
-    1090,
+    1206,   # Champion v1.2
+    1091,   # ChampionMastery
+    976,    # CurrentGame v1.0
+    977,    # Featured Games v1.0
+    1207,   # Game v1.3
+    1215,   # League v2.5
+    1055,   # LoL Static Data v1.2
+    1085,   # LoL Status v1.0
+    1224,   # Match v2.2
+    1223,   # MatchList v2.2
+    1222,   # Runes Masteries v1.4
+    1209,   # Stats v1.3
+    1221,   # Summoner v1.4
+    1057,   # Tournament Provider v1
+    1090,   # Tournament Stub v1
 ]
 resourceMapping = {
     # lol-static-data
@@ -481,7 +466,7 @@ for className in classes:
         template = '''<?php
 
 /**
- * Copyright (C) 2016-2018  Daniel Dolejška
+ * Copyright (C) 2016-2019  Daniel Dolejška
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
