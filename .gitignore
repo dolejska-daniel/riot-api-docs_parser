@@ -1,4 +1,8 @@
-.idea/
-input/input_files/*
-output/
+.idea/*
+
+input/*
+!input/.gitkeep
+
+output/*
+
 log.txt
