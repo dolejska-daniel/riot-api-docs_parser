@@ -7,7 +7,7 @@ verify_ssl = true
 
 [packages]
 beautifulsoup4 = "*"
-lxml = "*"
+html5lib = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.9"
