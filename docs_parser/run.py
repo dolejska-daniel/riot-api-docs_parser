@@ -95,9 +95,10 @@ def parse(content: str = None) -> tuple[list[Resource], list[ObjectDefinition]]:
                 id=operation_id,
                 method=operation_method,
                 returns="_unknown_",
-                docs_link=operation_link,
+                docs_link="https://developer.riotgames.com/apis" + operation_link,
                 api_path=operation_path,
             )
+            print(operation)
             resource.operations.append(operation)
             log.info("processing operation %s.%s", resource.name, operation.id)
 
