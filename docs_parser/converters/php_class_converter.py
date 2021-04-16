@@ -4,7 +4,7 @@ import re
 from itertools import chain
 
 from .base import ConverterBase
-from ..objects import ObjectDefinition, Resource, ObjectProperty
+from ..objects import ObjectDefinition, Resource, ObjectProperty, Operation
 
 log = logging.getLogger("php_class_converter")
 
@@ -20,25 +20,21 @@ class PHPClassConverter(ConverterBase):
         self.iterable_classes: dict[str, str] = {}
         self.linkable_classes: dict[str, tuple[str, str]] = {}
 
-    def _get_package_name(self, obj: ObjectDefinition) -> str:
-        api_path_bases = {o.api_path[:o.api_path[1:].find("/") + 1] for o in chain(*obj.sources.values())}
-        if len(api_path_bases) > 1:
-            log.warning("class has more than one API path bases")
-
-        api_path_base = api_path_bases.pop()
-        if api_path_base == "/lol":
+    def _get_package_name(self, op: Operation) -> str:
+        _, api_path_base, _ = op.api_path.split("/", maxsplit=2)
+        if api_path_base == "lol":
             api_class = "LeagueAPI"
 
-        elif api_path_base == "/lor":
+        elif api_path_base == "lor":
             api_class = "RuneterraAPI"
 
-        elif api_path_base == "/val":
+        elif api_path_base == "val":
             api_class = "ValorantAPI"
 
-        elif api_path_base == "/tft":
+        elif api_path_base == "tft":
             api_class = "TFTAPI"
 
-        elif api_path_base == "/riot":
+        elif api_path_base == "riot":
             api_class = "RiotAPI"
 
         else:
@@ -55,7 +51,7 @@ class PHPClassConverter(ConverterBase):
 
         return name
 
-    def _get_class_annotation(self, obj: ObjectDefinition) -> str:
+    def _get_class_annotation(self, obj: ObjectDefinition, op: Operation) -> str:
         annotation_lines = []
 
         if obj.description:
@@ -66,7 +62,7 @@ class PHPClassConverter(ConverterBase):
 
         annotation_lines.extend([
             "",
-            *self._get_class_used_by(obj),
+            *self._get_class_used_by(obj, op),
         ])
 
         if obj.name in self.linkable_classes:
@@ -119,29 +115,42 @@ class PHPClassConverter(ConverterBase):
 
         return description
 
-    def _get_class_used_by(self, obj: ObjectDefinition) -> list[str]:
+    def _get_class_used_by(self, obj: ObjectDefinition, op: Operation) -> list[str]:
         lines = [" Used in:"]
-        _, class_name, _ = self._get_package_name(obj).split("\\")
+        _, class_name, _ = self._get_package_name(op).split("\\")
 
         for resource, operations in obj.sources.items():
-            lines.append(f"   {resource.as_source}")
+            operations_lines = []
             for operation in operations:
-                lines.extend([
+                if self._get_package_name(operation) != self._get_package_name(op):
+                    continue
+
+                operations_lines.extend([
                     f"     - @see {class_name}::{operation.id}",
                     f"       @link {operation.docs_link}",
                 ])
 
+            if operations_lines:
+                lines.append(f"   {resource.as_source}")
+                lines.extend(operations_lines)
+
         return lines
 
-    def _get_class_property_used_by(self, prop: ObjectProperty, obj: ObjectDefinition) -> list[str]:
-        lines = [" * Available when received from:"]
-        _, class_name, _ = self._get_package_name(obj).split("\\")
+    def _get_class_property_used_by(self, prop: ObjectProperty, op: Operation) -> list[str]:
+        lines = []
+        _, class_name, _ = self._get_package_name(op).split("\\")
 
         for resource, operations in prop.sources.items():
             for operation in operations:
+                if self._get_package_name(operation) != self._get_package_name(op):
+                    continue
+
                 lines.append(f" *   - @see {class_name}::{operation.id}")
 
-        return lines
+        if not lines:
+            return []
+
+        return [" * Available when received from:"] + lines
 
     def _get_class_property_type(self, prop: ObjectProperty) -> str:
         if match := re.match(r"^.*\[(.+)]$", prop.type):
@@ -161,12 +170,14 @@ class PHPClassConverter(ConverterBase):
 
         return type_name
 
-    def _get_class_properties(self, obj: ObjectDefinition) -> str:
+    def _get_class_properties(self, obj: ObjectDefinition, op: Operation) -> str:
         prop_strings = []
 
         for prop in obj.properties.values():
             description = self._get_class_property_description(prop)
-            used_by = self._get_class_property_used_by(prop, obj)
+            used_by = self._get_class_property_used_by(prop, op)
+            if not used_by:
+                continue
 
             prop_strings.append("/**")
             if description:
@@ -186,14 +197,23 @@ class PHPClassConverter(ConverterBase):
 
         return "\n\t" + "\n\t".join(prop_strings)
 
-    def dirname(self, obj: ObjectDefinition) -> str:
-        _, name, _ = self._get_package_name(obj).split("\\")
+    def packages(self, obj: ObjectDefinition) -> set[tuple[str, Operation]]:
+        packages: dict[str, Operation] = {}
+        for op in chain(*obj.sources.values()):
+            package_name = self._get_package_name(op)
+            if package_name not in packages:
+                packages[package_name] = op
+
+        return set(packages.items())
+
+    def dirname(self, op: Operation) -> str:
+        _, name, _ = self._get_package_name(op).split("\\")
         return f"{self.output_dir}/{name}"
 
     def filename(self, obj: ObjectDefinition) -> str:
         return f"{self._get_class_name(obj)}.php"
 
-    def contents(self, obj: ObjectDefinition) -> str:
+    def contents(self, obj: ObjectDefinition, op: Operation) -> str:
         return f'''
 <?php
 
@@ -214,15 +234,15 @@ class PHPClassConverter(ConverterBase):
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace {self._get_package_name(obj)};
+namespace {self._get_package_name(op)};
 {self._get_uses(obj)}
 
 /**
  *   Class {self._get_class_name(obj)}
- *{self._get_class_annotation(obj)}
+ *{self._get_class_annotation(obj, op)}
  *
- * @package {self._get_package_name(obj)}
+ * @package {self._get_package_name(op)}
  */
 class {self._get_class_name(obj)}{self._get_class_extends(obj)}
-''' + "{" + self._get_class_properties(obj) + "}\n"
+''' + "{" + self._get_class_properties(obj, op) + "}\n"
 

@@ -1,6 +1,6 @@
 import abc
 
-from docs_parser.objects import ObjectDefinition, Resource
+from ..objects import ObjectDefinition, Resource, Operation
 
 
 class ConverterBase(metaclass=abc.ABCMeta):
@@ -9,7 +9,7 @@ class ConverterBase(metaclass=abc.ABCMeta):
         self._resources = resources
 
     @abc.abstractmethod
-    def dirname(self, obj: ObjectDefinition) -> str:
+    def dirname(self, op: Operation) -> str:
         pass
 
     @abc.abstractmethod
@@ -17,5 +17,5 @@ class ConverterBase(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def contents(self, obj: ObjectDefinition) -> str:
+    def contents(self, obj: ObjectDefinition, op: Operation) -> str:
         pass
