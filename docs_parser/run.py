@@ -64,12 +64,15 @@ def parse(content: str = None) -> tuple[list[Resource], list[ObjectDefinition]]:
             content = f.readlines()
         content = "".join([str(line) for line in content])
 
+    ignore_resources = {
+        1246,  # lol-status-v3
+        # 1420,  # match-v4
+    }
+
     soup = BeautifulSoup(content, "html5lib")
     objects: dict[str, ObjectDefinition] = dict()
     resources: list[Resource] = list()
     for resource_data in soup.select(".resource"):
-        log.debug("processing new resource definition")
-
         resource_link = resource_data.find("a")["href"]
         _, resource_id = resource_data["id"].rsplit("_")
         resource_name, resource_version = resource_data["api-name"].rsplit("-", maxsplit=1)
@@ -82,11 +85,13 @@ def parse(content: str = None) -> tuple[list[Resource], list[ObjectDefinition]]:
             operations=[],
         )
         resources.append(resource)
-        log.info("processing %s resource", resource.as_source)
+        if resource.id in ignore_resources:
+            log.info("ignoring resource %s", resource.as_source)
+            continue
+
+        log.info("processing resource %s", resource.as_source)
 
         for operation_data in resource_data.select(".operation"):
-            log.debug("processing new operation definition")
-
             operation_link = operation_data.find("a")["href"]
             operation_method, operation_id = operation_link.rsplit("/", maxsplit=1)[1].split("_")
             operation_path = operation_data.select_one("span.path").text.strip()
@@ -98,13 +103,10 @@ def parse(content: str = None) -> tuple[list[Resource], list[ObjectDefinition]]:
                 docs_link="https://developer.riotgames.com/apis" + operation_link,
                 api_path=operation_path,
             )
-            print(operation)
             resource.operations.append(operation)
             log.info("processing operation %s.%s", resource.name, operation.id)
 
             for object_data in operation_data.select(".response_body"):
-                log.debug("processing new response body definition")
-
                 if "Return value:" in object_data.text:
                     _, return_type = object_data.text.split(":")
                     operation.returns = return_type.strip()
