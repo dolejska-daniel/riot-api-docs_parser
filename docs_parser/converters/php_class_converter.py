@@ -1,6 +1,5 @@
 import datetime
 import logging
-import re
 from itertools import chain
 
 from .base import ConverterBase
@@ -11,12 +10,13 @@ log = logging.getLogger("php_class_converter")
 
 class PHPClassConverter(ConverterBase):
 
-    standard_data_types = ["integer", "string", "bool", "float", "array"]
+    standard_data_types = {"integer", "string", "bool", "float", "array"}
 
     def __init__(self, resources: list[Resource]):
         super().__init__(resources)
 
         self.output_dir: str = ""
+        self.nullable_fields: set[str] = set()
         self.iterable_classes: dict[str, str] = {}
         self.linkable_classes: dict[str, tuple[str, str]] = {}
 
@@ -46,10 +46,7 @@ class PHPClassConverter(ConverterBase):
         return ""
 
     def _get_class_name(self, obj: ObjectDefinition) -> str:
-        name = obj.name
-        name = name.replace("DTO", "Dto")
-
-        return name
+        return obj.name
 
     def _get_class_annotation(self, obj: ObjectDefinition, op: Operation) -> str:
         annotation_lines = []
@@ -152,11 +149,35 @@ class PHPClassConverter(ConverterBase):
 
         return [" * Available when received from:"] + lines
 
-    def _get_class_property_type(self, prop: ObjectProperty) -> str:
-        if match := re.match(r"^.*\[(.+)]$", prop.type):
-            return f"{self._get_php_datatype(match.group(1))}[]"
+    def _is_prop_nullable(self, obj: ObjectDefinition, prop: ObjectProperty) -> bool:
+        return f"{obj.name}.{prop.name}" in self.nullable_fields
 
-        return self._get_php_datatype(prop.type)
+    def _get_class_property_init(self, obj: ObjectDefinition, prop: ObjectProperty):
+        return " = null" if self._is_prop_nullable(obj, prop) else ""
+
+    def _get_class_property_type(self, obj: ObjectDefinition, prop: ObjectProperty) -> str:
+        datatype = self._get_php_datatype(prop.type)
+        if prop.is_array:
+            datatype = f"array"
+
+        if self._is_prop_nullable(obj, prop):
+            if datatype in self.standard_data_types:
+                datatype += "|null"
+
+            else:
+                datatype = "?" + datatype
+
+        return datatype
+
+    def _get_class_property_phpdoc_type(self, obj: ObjectDefinition, prop: ObjectProperty) -> str:
+        datatype = self._get_php_datatype(prop.type)
+        if prop.is_array:
+            datatype = datatype + f"[]"
+
+        if self._is_prop_nullable(obj, prop):
+            datatype += "|null"
+
+        return datatype
 
     def _get_php_datatype(self, type_name: str) -> str:
         if type_name.lower() in ["float", "double"]:
@@ -189,11 +210,13 @@ class PHPClassConverter(ConverterBase):
             prop_strings.extend([
                 *used_by,
                 " *",
-                f" * @var {self._get_class_property_type(prop)} ${prop.name}",
+                f" * @var {self._get_class_property_phpdoc_type(obj, prop)} ${prop.name}",
                 " */",
             ])
 
-            prop_strings.append(f"public ${prop.name};\n")
+            prop_type = self._get_class_property_type(obj, prop)
+            prop_init_value = self._get_class_property_init(obj, prop)
+            prop_strings.append(f"public {prop_type} ${prop.name}{prop_init_value};\n")
 
         return "\n\t" + "\n\t".join(prop_strings)
 
@@ -204,7 +227,7 @@ class PHPClassConverter(ConverterBase):
             if package_name not in packages:
                 packages[package_name] = op
 
-        return set(packages.items())
+        return set(tuple(packages.items()))
 
     def dirname(self, op: Operation) -> str:
         _, name, _ = self._get_package_name(op).split("\\")

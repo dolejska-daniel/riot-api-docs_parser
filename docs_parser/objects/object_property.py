@@ -10,3 +10,4 @@ class ObjectProperty:
     type: str
     description: str
     sources: dict[Resource, set[Operation]]
+    is_array: bool

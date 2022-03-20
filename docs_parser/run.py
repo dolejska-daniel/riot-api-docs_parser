@@ -1,4 +1,5 @@
 import os
+import re
 from collections import defaultdict
 
 import logging
@@ -118,7 +119,7 @@ def parse(content: str = None) -> tuple[list[Resource], list[ObjectDefinition]]:
                         log.warning("skipping definition: %s", object_data)
                         continue
 
-                object_name = object_heading.text.strip()
+                object_name = object_heading.text.strip().replace("DTO", "Dto")
                 if object_name in objects:
                     obj = objects[object_name]
                     log.debug("reusing definition of object %s", obj.name)
@@ -145,11 +146,16 @@ def parse(content: str = None) -> tuple[list[Resource], list[ObjectDefinition]]:
                         log.debug("reusing definition of object property %s", prop.name)
 
                     else:
+                        prop_type, is_array = prop_type.text.strip(), False
+                        if match := re.match(r"^.*\[(.+)]$", prop_type):
+                            prop_type, is_array = match.group(1), True
+
                         prop = ObjectProperty(
                             name=prop_name,
-                            type=prop_type.text.strip(),
+                            type=prop_type,
                             description=prop_desc.text.strip(),
                             sources=defaultdict(set),
+                            is_array=is_array
                         )
                         obj.properties[prop.name] = prop
                         log.info("created new definition of object property %s", prop.name)
@@ -167,6 +173,16 @@ def generate(resources: list[Resource], objects: list[ObjectDefinition]):
     log.debug("running docs conversion")
     converter = PHPClassConverter(resources)
     converter.output_dir = "output"
+    converter.nullable_fields = {
+        "LeagueEntryDto.miniSeries",
+        "LeagueItemDto.miniSeries",
+        "LobbyEventDto.summonerId",
+        "TournamentCodeDto.metaData",
+        "Perks.perkIds",
+        "StatusDto.updated_at",
+        "StatusDto.archive_at",
+        "StatusDto.maintenance_status",
+    }
     converter.iterable_classes = {
         "ChampionListDto": "champions",
         "CurrentGameInfo": "participants",
