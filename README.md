@@ -1,5 +1,5 @@
 # RiotAPI: Developer Docs Parser
-> v0.1.0
+> v0.1.1
 
 ## Introduction
 This utility allows automated scraping and parsing of Riot API developer documentation at
@@ -16,9 +16,9 @@ pipenv install
 
 ## Usage
 ```shell
-pipenv run python docs_parser --download
+pipenv run python docs_parser.py --download
 ```
 
 ```shell
-pipenv run python docs_parser
+pipenv run python docs_parser.py
 ```
